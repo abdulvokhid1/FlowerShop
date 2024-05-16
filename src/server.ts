@@ -1,4 +1,2 @@
-console.log("executed");
-
-const person: string = "Ali";
-const count: number = 100;
+import dotenv from "dotenv";
+dotenv.config();
