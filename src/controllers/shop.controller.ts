@@ -32,5 +32,23 @@ shopController.getSignup = (req: Request, res: Response) => {
     console.log("Error: getSignup", err);
   }
 };
+shopController.processLogin = (req: Request, res: Response) => {
+  try {
+    console.log("processLogin");
+
+    res.send("DONE!");
+  } catch (err) {
+    console.log("Error: processLogin", err);
+  }
+};
+shopController.processSignup = (req: Request, res: Response) => {
+  try {
+    console.log("processSignup");
+
+    res.send("DONE!");
+  } catch (err) {
+    console.log("Error: processSignup", err);
+  }
+};
 
 export default shopController;
