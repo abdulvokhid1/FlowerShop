@@ -1,31 +1,36 @@
 import { T } from "../libs/types/common";
 import { Request, Response } from "express";
-import { MemberService } from "../Models/Member.service";
+import MemberService from "../Models/Member.service";
 
-const restaurantController: T = {};
+const shopController: T = {};
 
-restaurantController.goHome = (req: Request, res: Response) => {
+shopController.goHome = (req: Request, res: Response) => {
   try {
+    console.log("goHome");
     res.send("Home Page");
   } catch (err) {
     console.log("Error: HomePage", err);
   }
 };
 
-restaurantController.getLogin = (req: Request, res: Response) => {
+shopController.getLogin = (req: Request, res: Response) => {
   try {
+    console.log("getLogin");
+
     res.send("Login Page");
   } catch (err) {
     console.log("Error: getLogin", err);
   }
 };
 
-restaurantController.getSignup = (req: Request, res: Response) => {
+shopController.getSignup = (req: Request, res: Response) => {
   try {
+    console.log("getSignup");
+
     res.send("Signup Page");
   } catch (err) {
     console.log("Error: getSignup", err);
   }
 };
 
-export default restaurantController;
+export default shopController;
