@@ -22,7 +22,7 @@ export enum Message {
   TOKEN_CREATION_FAILED = "Token creation error!",
 }
 
-class Erros extends Error {
+class Errors extends Error {
   public code: HttpCode;
   public message: Message;
 
@@ -38,4 +38,4 @@ class Erros extends Error {
   }
 }
 
-export default Erros;
+export default Errors;
