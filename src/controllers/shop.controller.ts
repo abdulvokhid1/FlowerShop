@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import MemberService from "../Models/Member.service";
 import { AdminRequest, LoginInput, MemberInput } from "../libs/types/member";
 import { MemberType } from "../libs/enums/member.enum";
-import { Message } from "../libs/Errors";
+import Errors, { Message } from "../libs/Errors";
 
 const shopController: T = {};
 const memberService = new MemberService();
@@ -14,6 +14,7 @@ shopController.goHome = (req: Request, res: Response) => {
     res.render("home");
   } catch (err) {
     console.log("Error: HomePage", err);
+    res.redirect("/admin");
   }
 };
 
@@ -24,6 +25,7 @@ shopController.getSignup = (req: Request, res: Response) => {
     res.render("signup");
   } catch (err) {
     console.log("Error: getSignup", err);
+    res.redirect("/admin");
   }
 };
 
@@ -34,6 +36,28 @@ shopController.getLogin = (req: Request, res: Response) => {
     res.render("login");
   } catch (err) {
     console.log("Error: getLogin", err);
+    res.redirect("/admin");
+  }
+};
+
+shopController.processSignup = async (req: AdminRequest, res: Response) => {
+  try {
+    console.log("processSignup");
+    const newMember: MemberInput = req.body;
+    newMember.memberType = MemberType.SHOP;
+    const result = await memberService.processSignup(newMember);
+
+    req.session.member = result;
+    req.session.save(function () {
+      res.send(result);
+    });
+  } catch (err) {
+    console.log("ERROR, processSignup", err);
+    const message =
+      err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
+    res.send(
+      `<script> alert("${message}"); window.location.replace('/admin/signup') </script>`
+    );
   }
 };
 
@@ -48,23 +72,24 @@ shopController.processLogin = async (req: AdminRequest, res: Response) => {
       res.send(result);
     });
   } catch (err) {
-    console.log("Error: processLogin", err);
-    res.send(err);
+    console.log("ERROR, processLogin", err);
+    const message =
+      err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
+    res.send(
+      `<script> alert("${message}"); window.location.replace('/admin/login') </script>`
+    );
   }
 };
-shopController.processSignup = async (req: AdminRequest, res: Response) => {
-  try {
-    console.log("processSignup");
-    const newMember: MemberInput = req.body;
-    newMember.memberType = MemberType.SHOP;
-    const result = await memberService.processSignup(newMember);
 
-    req.session.member = result;
-    req.session.save(function () {
-      res.send(result);
+shopController.logout = async (req: AdminRequest, res: Response) => {
+  try {
+    console.log("logout");
+
+    req.session.destroy(function () {
+      res.redirect("/admin");
     });
   } catch (err) {
-    console.log("Error: processSignup", err);
+    console.log("Error: logout", err);
     res.send(err);
   }
 };

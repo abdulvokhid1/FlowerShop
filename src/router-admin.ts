@@ -13,6 +13,8 @@ routerAdmin
 
 routerAdmin.get("/check-me", shopController.checkAuthSession);
 
+routerAdmin.get("/logout", shopController.logout);
+
 /* Product */
 
 /* User */
