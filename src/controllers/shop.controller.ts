@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import MemberService from "../Models/Member.service";
 import { AdminRequest, LoginInput, MemberInput } from "../libs/types/member";
 import { MemberType } from "../libs/enums/member.enum";
+import { Message } from "../libs/Errors";
 
 const shopController: T = {};
 const memberService = new MemberService();
@@ -64,6 +65,18 @@ shopController.processSignup = async (req: AdminRequest, res: Response) => {
     });
   } catch (err) {
     console.log("Error: processSignup", err);
+    res.send(err);
+  }
+};
+
+shopController.checkAuthSession = async (req: AdminRequest, res: Response) => {
+  try {
+    console.log("checkAuthSession");
+    if (req.session?.member)
+      res.send(`<script> alert("${req.session.member.memberNick}") </script>`);
+    else res.send(`<script> alert("${Message.NOT_AUTHENTICATED}") </script>`);
+  } catch (err) {
+    console.log("Error, checkAuthSession:", err);
     res.send(err);
   }
 };
