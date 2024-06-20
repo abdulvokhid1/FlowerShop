@@ -1,16 +1,22 @@
 import express from "express";
 import shopController from "./controllers/shop.controller";
 import productController from "./controllers/product.controller";
+import makeUploader from "./libs/utils/uploader";
 
 const routerAdmin = express.Router();
 /* Shop */
 routerAdmin.get("/", shopController.goHome);
+
 routerAdmin
   .get("/login", shopController.getLogin)
   .post("/login", shopController.processLogin);
 routerAdmin
   .get("/signup", shopController.getSignup)
-  .post("/signup", shopController.processSignup);
+  .post(
+    "/signup",
+    makeUploader("members").single("memberImage"),
+    shopController.processSignup
+  );
 
 routerAdmin.get("/check-me", shopController.checkAuthSession);
 
@@ -22,8 +28,18 @@ routerAdmin.get(
   shopController.verifyShop,
   productController.getAllProducts
 );
-routerAdmin.post("/product/create", productController.createNewProduct);
-routerAdmin.post("/product/:id", productController.updateChosenProduct);
+routerAdmin.post(
+  "/product/create",
+  shopController.verifyShop,
+  // uploadProductImage.single("productImage"),
+  makeUploader("products").single("productImage"),
+  productController.createNewProduct
+);
+routerAdmin.post(
+  "/product/:id",
+  shopController.verifyShop,
+  productController.updateChosenProduct
+);
 
 /* User */
 
