@@ -1,55 +1,61 @@
-import { T } from "../libs/types/common";
 import { NextFunction, Request, Response } from "express";
+import { T } from "../libs/types/common";
 import MemberService from "../Models/Member.service";
 import { AdminRequest, LoginInput, MemberInput } from "../libs/types/member";
 import { MemberType } from "../libs/enums/member.enum";
-import Errors, { Message } from "../libs/Errors";
+import Errors, { HttpCode, Message } from "../libs/Errors";
+import Erros from "../libs/Errors";
 
-const shopController: T = {};
 const memberService = new MemberService();
 
-shopController.goHome = (req: Request, res: Response) => {
+const restaurantController: T = {};
+
+restaurantController.goHome = (req: Request, res: Response) => {
   try {
     console.log("goHome");
     res.render("home");
   } catch (err) {
-    console.log("Error: HomePage", err);
+    console.log("ERROR, goHome", err);
     res.redirect("/admin");
   }
 };
 
-shopController.getSignup = (req: Request, res: Response) => {
+restaurantController.getSignup = (req: Request, res: Response) => {
   try {
-    console.log("getSignup");
-
     res.render("signup");
   } catch (err) {
-    console.log("Error: getSignup", err);
+    console.log("ERROR, getSignup", err);
     res.redirect("/admin");
   }
 };
-
-shopController.getLogin = (req: Request, res: Response) => {
+restaurantController.getLogin = (req: Request, res: Response) => {
   try {
-    console.log("getLogin");
-
     res.render("login");
   } catch (err) {
-    console.log("Error: getLogin", err);
+    console.log("ERROR, getLogin", err);
     res.redirect("/admin");
   }
 };
 
-shopController.processSignup = async (req: AdminRequest, res: Response) => {
+restaurantController.processSignup = async (
+  req: AdminRequest,
+  res: Response
+) => {
   try {
     console.log("processSignup");
-    const newMember: MemberInput = req.body;
-    newMember.memberType = MemberType.SHOP;
-    const result = await memberService.processSignup(newMember);
+    console.log("req.body:", req.body);
+    const file = req.file;
+    if (!file)
+      throw new Errors(HttpCode.BAD_REQUEST, Message.SOMETHING_WENT_WRONG);
 
+    const newMember: MemberInput = req.body;
+    newMember.memberImage = file?.path;
+    newMember.memberType = MemberType.COFFEESHOP;
+    const result = await memberService.processSignup(newMember);
+    //TODO: SESSIONS AUTHENTICATION
     req.session.member = result;
     req.session.save(function () {
-      res.send(result);
+      res.redirect("/admin/product/all");
     });
   } catch (err) {
     console.log("ERROR, processSignup", err);
@@ -61,15 +67,20 @@ shopController.processSignup = async (req: AdminRequest, res: Response) => {
   }
 };
 
-shopController.processLogin = async (req: AdminRequest, res: Response) => {
+restaurantController.processLogin = async (
+  req: AdminRequest,
+  res: Response
+) => {
   try {
     console.log("processLogin");
+
     const input: LoginInput = req.body;
     const result = await memberService.processLogin(input);
+    //TODO: SESSIONS AUTHENTICATION
 
     req.session.member = result;
     req.session.save(function () {
-      res.send(result);
+      res.redirect("/admin/product/all");
     });
   } catch (err) {
     console.log("ERROR, processLogin", err);
@@ -81,20 +92,48 @@ shopController.processLogin = async (req: AdminRequest, res: Response) => {
   }
 };
 
-shopController.logout = async (req: AdminRequest, res: Response) => {
+restaurantController.logout = async (req: AdminRequest, res: Response) => {
   try {
-    console.log("logout");
+    console.log("processLogin");
 
     req.session.destroy(function () {
       res.redirect("/admin");
     });
   } catch (err) {
-    console.log("Error: logout", err);
-    res.send(err);
+    console.log("ERROR, processLogin", err);
+    res.redirect("/admin");
   }
 };
 
-shopController.checkAuthSession = async (req: AdminRequest, res: Response) => {
+restaurantController.getUsers = async (req: Request, res: Response) => {
+  try {
+    console.log("getUsers");
+    const result = await memberService.getUsers();
+    console.log("result", result);
+    res.render("users", { users: result });
+  } catch (err) {
+    console.log("ERROR, getUsers", err);
+    res.redirect("/admin/login");
+  }
+};
+
+restaurantController.updateChosenUser = async (req: Request, res: Response) => {
+  try {
+    console.log("updateChosenUser");
+    const result = await memberService.updateChosenUser(req.body);
+
+    res.status(HttpCode.OK).json({ data: result });
+  } catch (err) {
+    console.log("ERROR, updateChosenUser", err);
+    if (err instanceof Erros) res.status(err.code).json(err);
+    else res.status(Erros.standard.code).json(Erros.standard);
+  }
+};
+
+restaurantController.checkAuthSession = async (
+  req: AdminRequest,
+  res: Response
+) => {
   try {
     console.log("checkAuthSession");
     if (req.session?.member)
@@ -106,12 +145,12 @@ shopController.checkAuthSession = async (req: AdminRequest, res: Response) => {
   }
 };
 
-shopController.verifyShop = (
+restaurantController.verifyRestaurant = (
   req: AdminRequest,
   res: Response,
   next: NextFunction
 ) => {
-  if (req?.session?.member?.memberType === MemberType.SHOP) {
+  if (req.session?.member?.memberType === MemberType.COFFEESHOP) {
     req.member = req.session.member;
     next();
   } else {
@@ -122,4 +161,4 @@ shopController.verifyShop = (
   }
 };
 
-export default shopController;
+export default restaurantController;

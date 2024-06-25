@@ -1,45 +1,57 @@
 import express from "express";
-import shopController from "./controllers/shop.controller";
+const routerAdmin = express.Router();
+
+import coffeeController from "./controllers/coffee.controller";
 import productController from "./controllers/product.controller";
 import makeUploader from "./libs/utils/uploader";
-
-const routerAdmin = express.Router();
-/* Shop */
-routerAdmin.get("/", shopController.goHome);
-
+/** Restaurant*/
+routerAdmin.get("/", coffeeController.goHome);
 routerAdmin
-  .get("/login", shopController.getLogin)
-  .post("/login", shopController.processLogin);
-routerAdmin.get("/signup", shopController.getSignup).post(
-  "/signup",
-  makeUploader("members").single("memberImage"),
-  // makeUploader("members").array("memberImages", 5),
-  shopController.processSignup
-);
+  .get("/login", coffeeController.getLogin)
+  .post("/login", coffeeController.processLogin);
+routerAdmin
+  .get("/signup", coffeeController.getSignup)
+  .post(
+    "/signup",
+    makeUploader("members").single("memberImage"),
+    coffeeController.processSignup
+  );
 
-routerAdmin.get("/check-me", shopController.checkAuthSession);
+routerAdmin.get("/logout", coffeeController.logout);
 
-routerAdmin.get("/logout", shopController.logout);
+routerAdmin.get("/check-me", coffeeController.checkAuthSession);
 
-/* Product */
+/** Product */
 routerAdmin.get(
   "/product/all",
-  shopController.verifyShop,
+  coffeeController.verifyRestaurant,
   productController.getAllProducts
 );
+
 routerAdmin.post(
   "/product/create",
-  shopController.verifyShop,
-  // uploadProductImage.single("productImage"),
-  makeUploader("products").single("productImage"),
+  coffeeController.verifyRestaurant,
+  makeUploader("products").array("productImages", 5),
   productController.createNewProduct
 );
+
 routerAdmin.post(
   "/product/:id",
-  shopController.verifyShop,
+  coffeeController.verifyRestaurant,
   productController.updateChosenProduct
 );
 
-/* User */
+/** User */
+
+routerAdmin.get(
+  "/user/all",
+  coffeeController.verifyRestaurant,
+  coffeeController.getUsers
+);
+routerAdmin.post(
+  "/user/edit",
+  coffeeController.verifyRestaurant,
+  coffeeController.updateChosenUser
+);
 
 export default routerAdmin;
